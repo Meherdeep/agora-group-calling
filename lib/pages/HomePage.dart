@@ -11,6 +11,7 @@ class MyHomePage extends StatefulWidget {
 class _MyHomePageState extends State<MyHomePage> {
   final myController = TextEditingController();
   bool _validateError = false;
+  final PermissionHandler _permissionHandler = PermissionHandler();
   //SystemChrome.setEnabledSystemUIOverlays([]); 
   @override
   Widget build(BuildContext context) {
@@ -98,17 +99,13 @@ class _MyHomePageState extends State<MyHomePage> {
       ? _validateError = true
       : _validateError = false;
     });
-    await _handleCameraAndMic(Permission.camera);
-    await _handleCameraAndMic(Permission.microphone);
+    await _permissionHandler.requestPermissions([PermissionGroup.camera, PermissionGroup.microphone]);
 
     Navigator.push(context, 
     MaterialPageRoute(
       builder: (context)=> CallPage(channelName: myController.text),)
       );
   }
-  Future<void> _handleCameraAndMic(Permission permission) async {
-    final status = await permission.request();
-    print(status);
-  }
+  
 
 }
