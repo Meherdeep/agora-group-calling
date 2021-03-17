@@ -6,7 +6,9 @@ import 'package:agora_rtc_engine/rtc_remote_view.dart' as RtcRemoteView;
 
 class CallPage extends StatefulWidget {
   final String channelName;
+
   const CallPage({Key key, this.channelName}) : super(key: key);
+  
 
   @override
   _CallPageState createState() => _CallPageState();

@@ -30,10 +30,9 @@ class _MyHomePageState extends State<MyHomePage> {
               crossAxisAlignment: CrossAxisAlignment.center,
               mainAxisAlignment: MainAxisAlignment.center,
               children: <Widget>[
-                Image(
-                  image: NetworkImage(
-                      'https://www.agora.io/en/wp-content/uploads/2019/07/agora-symbol-vertical.png'),
-                  height: MediaQuery.of(context).size.height * 0.17,
+                Container(
+                  child: Image.asset('assets/agora-logo.png'),
+                  height: MediaQuery.of(context).size.height * 0.1,
                 ),
                 Padding(padding: EdgeInsets.only(top: 20)),
                 Text(
