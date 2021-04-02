@@ -1,8 +1,11 @@
+import 'dart:convert';
+
 import 'package:flutter/material.dart';
 import '../utils/AppID.dart';
 import 'package:agora_rtc_engine/rtc_engine.dart';
 import 'package:agora_rtc_engine/rtc_local_view.dart' as RtcLocalView;
 import 'package:agora_rtc_engine/rtc_remote_view.dart' as RtcRemoteView;
+import 'package:http/http.dart' as http;
 
 class CallPage extends StatefulWidget {
   final String channelName;
@@ -17,6 +20,10 @@ class _CallPageState extends State<CallPage> {
   final _infoStrings = <String>[];
   bool muted = false;
   RtcEngine _engine;
+
+  String baseUrl = ''; //Enter the link to your deployed token server over here
+  int uid = 0;
+  String token;
 
   @override
   void dispose() {
@@ -48,7 +55,8 @@ class _CallPageState extends State<CallPage> {
     await _initAgoraRtcEngine();
     _addAgoraEventHandlers();
     // await _engine.enableWebSdkInteroperability(true);
-    await _engine.joinChannel(null, widget.channelName, null, 0);
+    await getToken();
+    await _engine.joinChannel(token, widget.channelName, null, 0);
   }
 
   /// Create agora sdk instance and initialize
@@ -59,46 +67,52 @@ class _CallPageState extends State<CallPage> {
 
   /// Add agora event handlers
   void _addAgoraEventHandlers() {
-    _engine.setEventHandler(RtcEngineEventHandler(
-      error: (code) {
-        setState(() {
-          final info = 'onError: $code';
-          _infoStrings.add(info);
-        });
-      },
-      joinChannelSuccess: (channel, uid, elapsed) {
-        setState(() {
-          final info = 'onJoinChannel: $channel, uid: $uid';
-          _infoStrings.add(info);
-        });
-      },
-      leaveChannel: (stats) {
-        setState(() {
-          _infoStrings.add('onLeaveChannel');
-          _users.clear();
-        });
-      },
-      userJoined: (uid, elapsed) {
-        setState(() {
-          final info = 'userJoined: $uid';
-          _infoStrings.add(info);
-          _users.add(uid);
-        });
-      },
-      userOffline: (uid, reason) {
-        setState(() {
-          final info = 'userOffline: $uid , reason: $reason';
-          _infoStrings.add(info);
-          _users.remove(uid);
-        });
-      },
-      firstRemoteVideoFrame: (uid, width, height, elapsed) {
-        setState(() {
-          final info = 'firstRemoteVideoFrame: $uid';
-          _infoStrings.add(info);
-        });
-      },
-    ));
+    _engine.setEventHandler(
+      RtcEngineEventHandler(
+        error: (code) {
+          setState(() {
+            final info = 'onError: $code';
+            _infoStrings.add(info);
+          });
+        },
+        joinChannelSuccess: (channel, uid, elapsed) {
+          setState(() {
+            final info = 'onJoinChannel: $channel, uid: $uid';
+            _infoStrings.add(info);
+          });
+        },
+        leaveChannel: (stats) {
+          setState(() {
+            _infoStrings.add('onLeaveChannel');
+            _users.clear();
+          });
+        },
+        userJoined: (uid, elapsed) {
+          setState(() {
+            final info = 'userJoined: $uid';
+            _infoStrings.add(info);
+            _users.add(uid);
+          });
+        },
+        userOffline: (uid, reason) {
+          setState(() {
+            final info = 'userOffline: $uid , reason: $reason';
+            _infoStrings.add(info);
+            _users.remove(uid);
+          });
+        },
+        firstRemoteVideoFrame: (uid, width, height, elapsed) {
+          setState(() {
+            final info = 'firstRemoteVideoFrame: $uid';
+            _infoStrings.add(info);
+          });
+        },
+        tokenPrivilegeWillExpire: (token) async {
+          await getToken();
+          await _engine.renewToken(token);
+        },
+      ),
+    );
   }
 
   /// Toolbar layout
@@ -242,5 +256,27 @@ class _CallPageState extends State<CallPage> {
 
   void _onSwitchCamera() {
     _engine.switchCamera();
+  }
+
+  Future<void> getToken() async {
+    final response = await http.get(
+      Uri.parse(baseUrl +
+              '/rtc/' +
+              widget.channelName +
+              '/publisher/uid/' +
+              uid.toString()
+          // To add expiry time uncomment the below given line with the time in seconds
+          // + '?expiry=45'
+          ),
+    );
+
+    if (response.statusCode == 200) {
+      setState(() {
+        token = response.body;
+        token = jsonDecode(token)['rtcToken'];
+      });
+    } else {
+      print('Failed to fetch the token');
+    }
   }
 }

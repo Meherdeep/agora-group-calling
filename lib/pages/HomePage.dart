@@ -30,11 +30,11 @@ class _MyHomePageState extends State<MyHomePage> {
               crossAxisAlignment: CrossAxisAlignment.center,
               mainAxisAlignment: MainAxisAlignment.center,
               children: <Widget>[
-                Image(
-                  image: NetworkImage(
-                      'https://www.agora.io/en/wp-content/uploads/2019/07/agora-symbol-vertical.png'),
-                  height: MediaQuery.of(context).size.height * 0.17,
-                ),
+                // Image(
+                //   image: NetworkImage(
+                //       'https://www.agora.io/en/wp-content/uploads/2019/07/agora-symbol-vertical.png'),
+                //   height: MediaQuery.of(context).size.height * 0.17,
+                // ),
                 Padding(padding: EdgeInsets.only(top: 20)),
                 Text(
                   'Agora Group Video Call Demo',
